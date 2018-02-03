@@ -17,8 +17,8 @@ public class ClientChatPrinter implements Runnable {
                 System.out.println(mes);
             }
             dis.close();
-        } catch (IOException e) {
-            System.out.println("eror");
+        } catch (IOException x) {
+            System.err.format("IOException: %s%n", x);
         }
     }
 }
