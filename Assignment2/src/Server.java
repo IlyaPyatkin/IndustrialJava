@@ -5,10 +5,11 @@ import java.util.HashMap;
 
 public class Server {
     public final static HashMap<String, ArrayList<ClientHandler>> rooms = new HashMap<>();
+    public final static ArrayList<ClientHandler> requestHandlers = new ArrayList<>();
     public static boolean running = true;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        new Thread(new ConnectionHandler()).start();
+        new Thread(new RoomHandler()).start();
         rooms.put("BestRoom", new ArrayList<>());
         rooms.put("WorstRoom", new ArrayList<>());
         rooms.put("AverageRoom", new ArrayList<>());
@@ -19,6 +20,17 @@ public class Server {
                     ArrayList<ClientHandler> toRemove = new ArrayList<>();
                     for (ClientHandler handler1 : handlers) {
                         ArrayList<String> messages = handler1.getMessages();
+
+                        for (int i = 0; i < messages.size(); i++)
+                            if (messages.get(i).equals("/switch")) {
+                                toRemove.add(handler1);
+                                synchronized (requestHandlers) {
+                                    requestHandlers.add(handler1);
+                                    handler1.printChats = true;
+                                }
+                                messages = new ArrayList<>(messages.subList(0, i));
+                                break;
+                            }
                         if (messages.isEmpty())
                             continue;
                         for (ClientHandler handler2 : handlers) {
@@ -32,9 +44,9 @@ public class Server {
                         }
                     }
                     handlers.removeAll(toRemove);
-                    Thread.sleep(200);
                 }
             }
+            Thread.sleep(500);
         }
     }
 }

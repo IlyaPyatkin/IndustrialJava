@@ -5,23 +5,26 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
+    public static boolean running = true;
     public static void main(String[] args) {
         try (Socket socket = new Socket("127.0.0.1", 9099);
-             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-             DataInputStream dis = new DataInputStream(socket.getInputStream())) {
-
-            Thread clientWriter = new Thread(new ClientChatPrinter(dis));
+             DataOutputStream dos = new DataOutputStream(socket.getOutputStream())) {
+            Thread clientWriter = new Thread(new ClientChatPrinter(socket));
             clientWriter.start();
             Scanner scanner = new Scanner(System.in);
-            String mes = "";
-
-            while (!"q".equals(mes) && clientWriter.isAlive()) {
-                mes = scanner.nextLine();
-                dos.writeUTF(mes);
+            while (running) {
+                String msg = scanner.nextLine();
+                if (msg.equals("/quit")) {
+                    running = false;
+                    break;
+                }
+                dos.writeUTF(msg);
                 dos.flush();
             }
-        } catch (IOException x) {
+            clientWriter.join();
+        } catch (IOException|InterruptedException x) {
             System.err.format("IOException: %s%n", x);
+            running = false;
         }
     }
 }

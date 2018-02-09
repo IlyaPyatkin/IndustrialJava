@@ -8,6 +8,7 @@ import java.util.Set;
 public class ClientHandler {
     private final DataInputStream dis;
     private final DataOutputStream dos;
+    public boolean printChats = true;
 
     public ClientHandler(Socket socket) throws IOException {
         dis = new DataInputStream(socket.getInputStream());
@@ -15,14 +16,21 @@ public class ClientHandler {
     }
 
     public String promptJoinRoom(Set<String> rooms) throws IOException {
-        dos.writeUTF("Choose one of the available rooms: " + rooms);
-        String room = dis.readUTF();
-        while (!rooms.contains(room)) {
-            dos.writeUTF("Please enter a valid room name");
-            room = dis.readUTF();
+        if (printChats) {
+            dos.writeUTF("Choose one of the available rooms: " + rooms);
+            printChats = false;
         }
-        dos.writeUTF("You have successfully joined " + room);
-        return room;
+        if (dis.available() > 0) {
+            String room = dis.readUTF();
+            if (rooms.contains(room)) {
+                dos.writeUTF("You have successfully joined " + room +
+                        "\nTo switch rooms use /switch\n" +
+                        "To quit chat use /quit");
+                return room;
+            } else
+                dos.writeUTF("Please enter a valid room name");
+        }
+        return null;
     }
 
     public ArrayList<String> getMessages() throws IOException {
