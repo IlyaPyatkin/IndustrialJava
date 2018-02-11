@@ -2,24 +2,18 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.LongAdder;
 
 public class WordCounter {
+    public final ICounterRules rules;
     private final HashMap<String, LongAdder> wordsCounter;
 
-    public WordCounter() {
+    public WordCounter(ICounterRules rules) {
         wordsCounter = new HashMap<>();
-    }
-
-    public static boolean accept(char c) {
-        return 'А' <= c && c <= 'я' ||
-                c == 'ё' || c == 'Ё';
-    }
-
-    public static boolean ignore(char c) {
-        return '0' <= c && c <= '9' ||
-                " .,?!-;:\"'«»()\n\r".contains(String.valueOf(c));
+        this.rules = rules;
     }
 
     public synchronized void addWord(String word) {
-        wordsCounter.computeIfAbsent(word, k -> new LongAdder()).increment();
-        System.out.println(wordsCounter);
+        if (rules.shouldCount(word)) {
+            wordsCounter.computeIfAbsent(word, k -> new LongAdder()).increment();
+            System.out.println(wordsCounter);
+        }
     }
 }

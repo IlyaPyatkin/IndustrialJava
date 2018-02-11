@@ -18,10 +18,10 @@ public class TextParserThread implements Runnable {
             int r;
             while ((r = buffer.read()) != -1 && manager.shouldRun) {
                 char ch = (char) r;
-                if (WordCounter.accept(ch)) word.append(ch);
-                else if (WordCounter.ignore(ch)) {
+                if (manager.counter.rules.accept(ch)) word.append(ch);
+                else if (manager.counter.rules.ignore(ch)) {
                     if (word.length() > 0) {
-                            manager.counter.addWord(word.toString().toLowerCase());
+                        manager.counter.addWord(word.toString().toLowerCase());
                         word = new StringBuilder();
                     }
                 } else {
@@ -39,5 +39,4 @@ public class TextParserThread implements Runnable {
             System.err.format("IOException: %s%n", x);
         }
     }
-
 }
